@@ -1,4 +1,4 @@
-const API = "http://localhost:5000/api/auth";
+const API = "https://signup-page-with-authentication.onrender.com/api/auth";
 
 // SIGNUP
 const signupForm = document.getElementById("signupForm");
