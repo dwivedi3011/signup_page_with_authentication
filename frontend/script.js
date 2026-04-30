@@ -49,7 +49,7 @@ if (loginForm) {
 
     if (data.token) {
       localStorage.setItem("token", data.token);
-      window.location.href = "dashboard.html";
+      window.location.href = "/dashboard";
     } else {
       alert(data.message);
     }
