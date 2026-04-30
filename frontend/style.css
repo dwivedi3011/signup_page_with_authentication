@@ -1,6 +1,6 @@
 body {
   font-family: Arial;
-  background: #f4f6f8;
+  background: linear-gradient(135deg, #667eea, #764ba2);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -11,10 +11,10 @@ body {
 .container {
   background: white;
   padding: 30px;
-  border-radius: 10px;
+  border-radius: 12px;
   width: 320px;
   text-align: center;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
 h2 {
@@ -26,23 +26,24 @@ input {
   padding: 10px;
   margin: 10px 0;
   border: 1px solid #ccc;
-  border-radius: 5px;
+  border-radius: 6px;
 }
 
 button {
   width: 100%;
   padding: 10px;
-  background: #007bff;
+  background: #667eea;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
 button:hover {
-  background: #0056b3;
+  background: #5a67d8;
 }
 
 .link {
   margin-top: 15px;
+  font-size: 14px;
 }
