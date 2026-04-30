@@ -49,6 +49,8 @@ app.get("/dashboard", authMiddleware, (req, res) => {
   res.send("Welcome to dashboard 🔐");
 });
 
+const transactionRoutes = require("./routes/transaction");
+app.use("/api/transactions", transactionRoutes);
 // Routes
 app.use("/api/auth", authRoutes);
 

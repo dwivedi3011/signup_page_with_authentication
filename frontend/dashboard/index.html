@@ -2,34 +2,39 @@
 <html>
 <head>
   <title>Dashboard</title>
+  <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-  <h1>Welcome to Dashboard 🎉</h1>
+
+<div class="dashboard">
+  <h2>💰 Expense Tracker</h2>
+
+  <!-- Add Transaction -->
+  <form id="expenseForm">
+    <input id="amount" type="number" placeholder="Amount" required>
+
+    <select id="type">
+      <option value="expense">Expense</option>
+      <option value="income">Income</option>
+    </select>
+
+    <input id="category" placeholder="Category" required>
+
+    <button type="submit">Add</button>
+  </form>
+
+  <!-- Summary -->
+  <h3>Summary</h3>
+  <p>Income: ₹<span id="income">0</span></p>
+  <p>Expense: ₹<span id="expense">0</span></p>
+  <p>Balance: ₹<span id="balance">0</span></p>
+
+  <!-- List -->
+  <ul id="list"></ul>
+
   <button onclick="logout()">Logout</button>
+</div>
 
-  <script>
-    function loadDashboard() {
-  fetch('http://localhost:5000/dashboard', {
-    method: 'GET',
-    headers: {
-      Authorization: localStorage.getItem("token")
-    }
-  })
-  .then(res => res.text())
-  .then(data => {
-    document.getElementById("output").innerText = data;
-  });
-}
-
-// Protect page
-if (!localStorage.getItem("token")) {
-  window.location.href = "login.html";
-}
-
-function logout() {
-  localStorage.removeItem("token");
-  window.location.href = "login.html";
-    }
-  </script>
+<script src="dashboard.js"></script>
 </body>
 </html>

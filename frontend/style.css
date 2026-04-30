@@ -17,16 +17,12 @@ body {
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
-h2 {
-  margin-bottom: 20px;
-}
-
 input {
   width: 100%;
   padding: 10px;
   margin: 10px 0;
-  border: 1px solid #ccc;
   border-radius: 6px;
+  border: 1px solid #ccc;
 }
 
 button {
@@ -45,5 +41,4 @@ button:hover {
 
 .link {
   margin-top: 15px;
-  font-size: 14px;
 }
