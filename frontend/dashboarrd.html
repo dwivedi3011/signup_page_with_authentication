@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+</head>
+<body>
+  <h1>Welcome to Dashboard 🎉</h1>
+  <button onclick="logout()">Logout</button>
+
+  <script>
+    function loadDashboard() {
+  fetch('http://localhost:5000/dashboard', {
+    method: 'GET',
+    headers: {
+      Authorization: localStorage.getItem("token")
+    }
+  })
+  .then(res => res.text())
+  .then(data => {
+    document.getElementById("output").innerText = data;
+  });
+}
+
+// Protect page
+if (!localStorage.getItem("token")) {
+  window.location.href = "login.html";
+}
+
+function logout() {
+  localStorage.removeItem("token");
+  window.location.href = "login.html";
+    }
+  </script>
+</body>
+</html>
