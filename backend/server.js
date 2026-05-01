@@ -2,59 +2,46 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 const authRoutes = require("./routes/auth");
+const transactionRoutes = require("./routes/transactions");
 
 const app = express();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Logger
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.url}`);
-  next();
-});
-
-// Root route
-app.get("/", (req, res) => {
-  res.send("API is running 🚀");
-});
-
-// MongoDB connection
-mongoose.connect("mongodb+srv://siddwivedi3011:Raja%407521@siddhant1.qwieqhn.mongodb.net/?retryWrites=true&w=majority&appName=siddhant1")
+mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
   .catch(err => console.log(err));
 
-// 🔐 Auth Middleware
-function authMiddleware(req, res, next) {
-  const token = req.header("Authorization");
+const SECRET = process.env.JWT_SECRET || "secret";
 
-  if (!token) {
-    return res.status(401).json({ message: "No token provided" });
-  }
+// Auth Middleware
+function authMiddleware(req, res, next) {
+  const token = req.header("Authorization")?.split(" ")[1];
+
+  if (!token) return res.status(401).json({ message: "No token" });
 
   try {
-    const decoded = jwt.verify(token, "secretkey");
+    const decoded = jwt.verify(token, SECRET);
     req.user = decoded;
     next();
-  } catch (err) {
+  } catch {
     res.status(401).json({ message: "Invalid token" });
   }
 }
 
-// 🔒 Protected route
-app.get("/dashboard", authMiddleware, (req, res) => {
-  res.send("Welcome to dashboard 🔐");
+app.use("/api/auth", authRoutes);
+app.use("/api/transactions", transactionRoutes);
+
+app.get("/", (req, res) => {
+  res.send("API running 🚀");
 });
 
-const transactionRoutes = require("./routes/transaction");
-app.use("/api/transactions", transactionRoutes);
-// Routes
-app.use("/api/auth", authRoutes);
+const PORT = process.env.PORT || 5000;
 
-// Start server
-app.listen(5000, () => {
-  console.log("Server running on http://localhost:5000");
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
