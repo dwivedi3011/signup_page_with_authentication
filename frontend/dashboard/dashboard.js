@@ -1,25 +1,39 @@
 const API = "https://signup-page-with-authentication.onrender.com/api";
 
-// Get token
 const token = localStorage.getItem("token");
 
+// 🔒 Protect route
 if (!token) {
-  window.location.href = "/login";
+  window.location.href = "/login.html";
 }
 
-// Decode userId
-const payload = JSON.parse(atob(token.split(".")[1]));
-const userId = payload.id;
+// Decode token safely
+let userId;
+try {
+  const payload = JSON.parse(atob(token.split(".")[1]));
+  userId = payload.id;
+} catch {
+  localStorage.removeItem("token");
+  window.location.href = "/login.html";
+}
 
 const list = document.getElementById("list");
 const form = document.getElementById("expenseForm");
 
+const amount = document.getElementById("amount");
+const type = document.getElementById("type");
+const category = document.getElementById("category");
+
+// ➕ Add transaction
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   await fetch(`${API}/transactions`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
     body: JSON.stringify({
       userId,
       amount: amount.value,
@@ -28,11 +42,18 @@ form.addEventListener("submit", async (e) => {
     })
   });
 
+  form.reset();
   loadData();
 });
 
+// 📥 Load transactions
 async function loadData() {
-  const res = await fetch(`${API}/transactions/${userId}`);
+  const res = await fetch(`${API}/transactions/${userId}`, {
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  });
+
   const data = await res.json();
 
   list.innerHTML = "";
@@ -59,16 +80,23 @@ async function loadData() {
   document.getElementById("balance").innerText = income - expense;
 }
 
+// ❌ Delete transaction
 async function deleteTx(id) {
   await fetch(`${API}/transactions/${id}`, {
-    method: "DELETE"
+    method: "DELETE",
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
   });
+
   loadData();
 }
 
+// 🚪 Logout
 function logout() {
   localStorage.removeItem("token");
-  window.location.href = "/login";
+  window.location.href = "/login.html";
 }
 
+// Initial load
 loadData();
