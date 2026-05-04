@@ -1,118 +1,117 @@
-const API = "https://signup-page-with-authentication.onrender.com/api";
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
-// ================= SIGNUP =================
-const signupForm = document.getElementById("signupForm");
+const app = express();
 
-if (signupForm) {
-  signupForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+// ================= MIDDLEWARE =================
+app.use(cors());
+app.use(express.json());
 
-    const username = document.getElementById("username").value;
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+// ================= DATABASE =================
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB Connected"))
+  .catch(err => console.log(err));
 
-    await fetch(`${API}/auth/signup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, password })
-    });
+// ================= SECRET =================
+const SECRET = process.env.JWT_SECRET || "secret";
 
-    alert("Signup successful");
-    window.location.href = "/login.html";
-  });
-}
+// ================= MODELS =================
+const User = mongoose.model("User", new mongoose.Schema({
+  username: String,
+  email: String,
+  password: String
+}));
 
-// ================= LOGIN =================
-const loginForm = document.getElementById("loginForm");
+const Transaction = mongoose.model("Transaction", new mongoose.Schema({
+  userId: String,
+  amount: Number,
+  type: String,
+  category: String
+}));
 
-if (loginForm) {
-  loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+// ================= AUTH ROUTES =================
 
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
+// Signup
+app.post("/api/auth/signup", async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
 
-    const res = await fetch(`${API}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password })
-    });
+    const user = new User({ username, email, password });
+    await user.save();
 
-    const data = await res.json();
-
-    if (data.token) {
-      localStorage.setItem("token", data.token);
-      window.location.href = "/dashboard.html";
-    } else {
-      alert("Login failed");
-    }
-  });
-}
-
-// ================= DASHBOARD =================
-async function loadData() {
-  const token = localStorage.getItem("token");
-
-  if (!token) {
-    window.location.href = "/login.html";
-    return;
+    res.json({ message: "Signup successful" });
+  } catch (err) {
+    res.status(500).json({ message: "Error in signup" });
   }
+});
 
-  // decode userId
-  const payload = JSON.parse(atob(token.split(".")[1]));
-  const userId = payload.id;
+// Login
+app.post("/api/auth/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
 
-  const res = await fetch(`${API}/transactions/${userId}`, {
-    headers: {
-      "Authorization": `Bearer ${token}`
+    const user = await User.findOne({ email, password });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid credentials" });
     }
-  });
 
-  const data = await res.json();
+    const token = jwt.sign(
+      { id: user._id },
+      SECRET,
+      { expiresIn: "1h" }
+    );
 
-  const list = document.getElementById("list");
-  if (!list) return;
+    res.json({ token });
+  } catch (err) {
+    res.status(500).json({ message: "Error in login" });
+  }
+});
 
-  list.innerHTML = "";
+// ================= TRANSACTION ROUTES =================
 
-  let income = 0;
-  let expense = 0;
+// Add transaction
+app.post("/api/transactions", async (req, res) => {
+  try {
+    const tx = new Transaction(req.body);
+    await tx.save();
+    res.json(tx);
+  } catch (err) {
+    res.status(500).json({ message: "Error adding transaction" });
+  }
+});
 
-  data.forEach(t => {
-    const li = document.createElement("li");
-    li.innerText = `${t.category} ₹${t.amount} (${t.type})`;
-    list.appendChild(li);
+// Get user transactions
+app.get("/api/transactions/:userId", async (req, res) => {
+  try {
+    const data = await Transaction.find({ userId: req.params.userId });
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching data" });
+  }
+});
 
-    if (t.type === "income") income += t.amount;
-    else expense += t.amount;
-  });
+// Delete transaction
+app.delete("/api/transactions/:id", async (req, res) => {
+  try {
+    await Transaction.findByIdAndDelete(req.params.id);
+    res.json({ message: "Deleted" });
+  } catch (err) {
+    res.status(500).json({ message: "Error deleting" });
+  }
+});
 
-  document.getElementById("income").innerText = income;
-  document.getElementById("expense").innerText = expense;
-  document.getElementById("balance").innerText = income - expense;
-}
+// ================= TEST ROUTE =================
+app.get("/", (req, res) => {
+  res.send("API running 🚀");
+});
 
-// ================= ADD =================
-async function addTransaction() {
-  const token = localStorage.getItem("token");
+// ================= SERVER =================
+const PORT = process.env.PORT || 5000;
 
-  const payload = JSON.parse(atob(token.split(".")[1]));
-  const userId = payload.id;
-
-  const amount = document.getElementById("amount").value;
-  const type = document.getElementById("type").value;
-  const category = document.getElementById("category").value;
-
-  await fetch(`${API}/transactions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`
-    },
-    body: JSON.stringify({ userId, amount, type, category })
-  });
-
-  loadData();
-}
-
-window.onload = loadData;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
