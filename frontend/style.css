@@ -1,13 +1,14 @@
 body {
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   background: linear-gradient(135deg, #667eea, #764ba2);
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
   margin: 0;
 }
 
+/* Card container */
 .container {
   background: white;
   padding: 30px;
@@ -17,14 +18,17 @@ body {
   box-shadow: 0 10px 25px rgba(0,0,0,0.2);
 }
 
-input {
+/* Inputs */
+input, select {
   width: 100%;
   padding: 10px;
   margin: 10px 0;
   border-radius: 6px;
   border: 1px solid #ccc;
+  outline: none;
 }
 
+/* Buttons */
 button {
   width: 100%;
   padding: 10px;
@@ -33,12 +37,63 @@ button {
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  transition: 0.3s;
 }
 
 button:hover {
   background: #5a67d8;
 }
 
+/* Links */
 .link {
   margin-top: 15px;
+}
+
+/* ================= DASHBOARD ================= */
+
+.dashboard {
+  width: 400px;
+}
+
+/* Summary cards */
+.summary {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.summary div {
+  background: #f3f4f6;
+  padding: 10px;
+  border-radius: 8px;
+  width: 30%;
+  font-size: 14px;
+}
+
+/* Transaction list */
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background: #f9fafb;
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Delete button */
+li button {
+  width: auto;
+  padding: 5px 10px;
+  background: red;
+  font-size: 12px;
+}
+
+li button:hover {
+  background: darkred;
 }
