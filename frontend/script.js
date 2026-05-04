@@ -1,5 +1,4 @@
-const AUTH_API = "https://your-backend.onrender.com/api/auth";
-const EXPENSE_API = "https://your-backend.onrender.com/api/transactions";
+const API = "https://signup-page-with-authentication.onrender.com/api";
 
 // ================= SIGNUP =================
 const signupForm = document.getElementById("signupForm");
@@ -12,14 +11,14 @@ if (signupForm) {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
 
-    const res = await fetch(`${AUTH_API}/signup`, {
+    await fetch(`${API}/auth/signup`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, email, password })
     });
 
-    alert("Signup done");
-    window.location.href = "/login";
+    alert("Signup successful");
+    window.location.href = "/login.html";
   });
 }
 
@@ -30,10 +29,10 @@ if (loginForm) {
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const email = document.getElementById("loginEmail").value;
-    const password = document.getElementById("loginPassword").value;
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
 
-    const res = await fetch(`${AUTH_API}/login`, {
+    const res = await fetch(`${API}/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password })
@@ -41,44 +40,79 @@ if (loginForm) {
 
     const data = await res.json();
 
-    localStorage.setItem("token", data.token);
-    window.location.href = "/dashboard";
+    if (data.token) {
+      localStorage.setItem("token", data.token);
+      window.location.href = "/dashboard.html";
+    } else {
+      alert("Login failed");
+    }
   });
 }
 
-// ================= ADD =================
-async function addTransaction() {
-  const amount = document.querySelector("input").value;
-  const type = document.querySelector("select").value;
-  const category = document.querySelectorAll("input")[1].value;
-
-  const token = localStorage.getItem("token");
-
-  await fetch(`${EXPENSE_API}/add`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": token
-    },
-    body: JSON.stringify({ amount, type, category })
-  });
-
-  loadData();
-}
-
-// ================= LOAD =================
+// ================= DASHBOARD =================
 async function loadData() {
   const token = localStorage.getItem("token");
 
-  const res = await fetch(`${EXPENSE_API}/summary`, {
-    headers: { "Authorization": token }
+  if (!token) {
+    window.location.href = "/login.html";
+    return;
+  }
+
+  // decode userId
+  const payload = JSON.parse(atob(token.split(".")[1]));
+  const userId = payload.id;
+
+  const res = await fetch(`${API}/transactions/${userId}`, {
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
   });
 
   const data = await res.json();
 
-  document.getElementById("income").innerText = data.income;
-  document.getElementById("expense").innerText = data.expense;
-  document.getElementById("balance").innerText = data.balance;
+  const list = document.getElementById("list");
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  let income = 0;
+  let expense = 0;
+
+  data.forEach(t => {
+    const li = document.createElement("li");
+    li.innerText = `${t.category} ₹${t.amount} (${t.type})`;
+    list.appendChild(li);
+
+    if (t.type === "income") income += t.amount;
+    else expense += t.amount;
+  });
+
+  document.getElementById("income").innerText = income;
+  document.getElementById("expense").innerText = expense;
+  document.getElementById("balance").innerText = income - expense;
+}
+
+// ================= ADD =================
+async function addTransaction() {
+  const token = localStorage.getItem("token");
+
+  const payload = JSON.parse(atob(token.split(".")[1]));
+  const userId = payload.id;
+
+  const amount = document.getElementById("amount").value;
+  const type = document.getElementById("type").value;
+  const category = document.getElementById("category").value;
+
+  await fetch(`${API}/transactions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({ userId, amount, type, category })
+  });
+
+  loadData();
 }
 
 window.onload = loadData;
