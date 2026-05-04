@@ -1,40 +1,35 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Dashboard</title>
-  <link rel="stylesheet" href="../style.css">
-</head>
-<body>
+const API = "https://signup-page-with-authentication.onrender.com/api";
 
-<div class="dashboard">
-  <h2>💰 Expense Tracker</h2>
+const form = document.getElementById("loginForm");
 
-  <!-- Add Transaction -->
-  <form id="expenseForm">
-    <input id="amount" type="number" placeholder="Amount" required>
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    <select id="type">
-      <option value="expense">Expense</option>
-      <option value="income">Income</option>
-    </select>
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
 
-    <input id="category" placeholder="Category" required>
+  try {
+    const res = await fetch(`${API}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email, password })
+    });
 
-    <button type="submit">Add</button>
-  </form>
+    const data = await res.json();
 
-  <!-- Summary -->
-  <h3>Summary</h3>
-  <p>Income: ₹<span id="income">0</span></p>
-  <p>Expense: ₹<span id="expense">0</span></p>
-  <p>Balance: ₹<span id="balance">0</span></p>
+    if (res.ok) {
+      // Save token
+      localStorage.setItem("token", data.token);
 
-  <!-- List -->
-  <ul id="list"></ul>
-
-  <button onclick="logout()">Logout</button>
-</div>
-
-<script src="dashboard.js"></script>
-</body>
-</html>
+      // Redirect to dashboard
+      window.location.href = "/dashboard.html";
+    } else {
+      alert(data.message || "Login failed");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong");
+  }
+});
