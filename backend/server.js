@@ -37,16 +37,16 @@ function authMiddleware(req, res, next) {
   }
 }
 
-// ================= ROUTES =================
+// ================= API ROUTES =================
 app.use("/api/auth", authRoutes);
 app.use("/api/transactions", transactionRoutes);
 
 // ================= SERVE FRONTEND =================
 
-// serve all frontend files
+// Serve static frontend files
 app.use(express.static(path.join(__dirname, "../frontend")));
 
-// default route → open login page
+// Default route → open login page
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/login/index.html"));
 });
